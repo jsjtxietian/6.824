@@ -2,8 +2,12 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"mapreduce"
 	"os"
+	"strconv"
+	"strings"
+	"unicode"
 )
 
 //
@@ -15,6 +19,17 @@ import (
 //
 func mapF(filename string, contents string) []mapreduce.KeyValue {
 	// Your code here (Part II).
+	f := func(c rune) bool {
+		return !unicode.IsLetter(c)
+	}
+
+	words := strings.FieldsFunc(contents, f)
+	kvSlice := make([]mapreduce.KeyValue, 0, len(words))
+
+	for _, word := range words {
+		kvSlice = append(kvSlice, mapreduce.KeyValue{word, "1"})
+	}
+	return kvSlice
 }
 
 //
@@ -24,6 +39,16 @@ func mapF(filename string, contents string) []mapreduce.KeyValue {
 //
 func reduceF(key string, values []string) string {
 	// Your code here (Part II).
+	var sum int
+	for _, str := range values {
+		i, err := strconv.Atoi(str)
+		if err != nil {
+			log.Fatal("Unable to convert ", str, " to int ")
+		}
+		sum += i
+	}
+
+	return strconv.Itoa(sum)
 }
 
 // Can be run in 3 ways:
