@@ -1,5 +1,13 @@
 package mapreduce
 
+import (
+	"encoding/json"
+	"fmt"
+	"log"
+	"os"
+	"sort"
+)
+
 func doReduce(
 	jobName string, // the name of the whole MapReduce job
 	reduceTask int, // which reduce task this is
@@ -7,6 +15,49 @@ func doReduce(
 	nMap int, // the number of map tasks that were run ("M" in the paper)
 	reduceF func(key string, values []string) string,
 ) {
+	fmt.Printf("Reduce: job name = %s, output file = %s, reduce task id = %d, nMap = %d\n",
+		jobName, outFile, reduceTask, nMap)
+
+	kvMap := make(map[string]([]string))
+
+	for mapNum := 0; mapNum < nMap; mapNum++ {
+		fileName := reduceName(jobName, mapNum, reduceTask)
+		f, err := os.Open(fileName)
+		if err != nil {
+			log.Fatal("Unable to read from: ", fileName)
+		}
+
+		defer f.Close()
+
+		decoder := json.NewDecoder(f)
+		var kv KeyValue
+		for decoder.More() {
+			err := decoder.Decode(&kv)
+			if err != nil {
+				log.Fatal("json decode failed, ", err)
+			}
+			kvMap[kv.Key] = append(kvMap[kv.Key], kv.Value)
+		}
+	}
+
+	keys := make([]string, 0, len(kvMap))
+	for k, _ := range kvMap {
+		keys = append(keys, k)
+	}
+
+	sort.Strings(keys)
+
+	outf, err := os.Create(outFile)
+	if err != nil {
+		log.Fatal("Unable to create file :", outFile)
+	}
+
+	defer outf.Close()
+
+	encoder := json.NewEncoder(outf)
+	for _, k := range keys {
+		encoder.Encode(KeyValue{k, reduceF(k, kvMap[k])})
+	}
 	//
 	// doReduce manages one reduce task: it should read the intermediate
 	// files for the task, sort the intermediate key/value pairs by key,
