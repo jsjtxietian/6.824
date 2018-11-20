@@ -2,7 +2,6 @@ package mapreduce
 
 import (
 	"fmt"
-	"log"
 	"sync"
 )
 
@@ -50,14 +49,16 @@ func schedule(jobName string, mapFiles []string, nReduce int, phase jobPhase, re
 
 		go func() {
 			defer wait_group.Done()
-			worker := <-registerChan
-			if call(worker, "Worker.DoTask", &taskArgs, nil) != true {
-				log.Fatal("RPC call error,exit")
+
+			for {
+				worker := <-registerChan
+				if call(worker, "Worker.DoTask", &taskArgs, nil) == true {
+					go func() {
+						registerChan <- worker
+					}()
+				}
 			}
 
-			go func() {
-				registerChan <- worker
-			}()
 		}()
 	}
 
