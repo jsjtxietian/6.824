@@ -56,6 +56,7 @@ func schedule(jobName string, mapFiles []string, nReduce int, phase jobPhase, re
 					go func() {
 						registerChan <- worker
 					}()
+					break
 				}
 			}
 
