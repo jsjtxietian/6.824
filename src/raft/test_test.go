@@ -1,5 +1,15 @@
 package raft
 
+import (
+	"fmt"
+	"math/rand"
+	"sync"
+	"sync/atomic"
+	"testing"
+	"time"
+)
+
+
 //
 // Raft tests.
 //
@@ -7,14 +17,6 @@ package raft
 // so, while you can modify this code to help you debug, please
 // test with the original before submitting.
 //
-
-import "testing"
-import "fmt"
-import "time"
-import "math/rand"
-import "sync/atomic"
-import "sync"
-
 // The tester generously allows solutions to complete elections in one second
 // (much more than the paper's range of timeouts).
 const RaftElectionTimeout = 1000 * time.Millisecond

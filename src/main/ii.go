@@ -17,7 +17,6 @@ import "mapreduce"
 // key/value pairs, each represented by a mapreduce.KeyValue.
 func mapF(document string, value string) (res []mapreduce.KeyValue) {
 	// Your code here (Part V).
-	// TODO: you should complete this to do the inverted index challenge
 	f := func(c rune) bool {
 		return !unicode.IsLetter(c)
 	}
@@ -39,7 +38,6 @@ func mapF(document string, value string) (res []mapreduce.KeyValue) {
 // should be a single output value for that key.
 func reduceF(key string, values []string) string {
 	// Your code here (Part V).
-	// TODO: you should complete this to do the inverted index challenge
 	nDoc := len(values)
 	sort.Strings(values)
 	var buf bytes.Buffer
